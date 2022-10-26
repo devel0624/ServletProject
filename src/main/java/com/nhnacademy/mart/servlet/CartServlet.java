@@ -3,15 +3,20 @@ package com.nhnacademy.mart.servlet;
 import com.nhnacademy.mart.domain.Basket;
 import com.nhnacademy.mart.domain.BuyList;
 import com.nhnacademy.mart.domain.Food;
+import com.nhnacademy.mart.domain.FoodList;
 import com.nhnacademy.mart.domain.FoodStand;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringTokenizer;
-import javax.management.openmbean.InvalidKeyException;
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.servlet.annotation.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+import javax.management.openmbean.InvalidKeyException;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "cartServlet", urlPatterns = "/cart")
 public class CartServlet extends HttpServlet {
@@ -23,6 +28,29 @@ public class CartServlet extends HttpServlet {
          * GET /cart : 장바구니 화면
          * 응답에 장바구니에 담긴 상품 목록과 전체 금액 표시
          */
+
+        BuyList buyList = (BuyList) request.getServletContext().getAttribute("buyList");
+
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/plain");
+
+        response.getWriter().println("장바구니에 들어있는 제품은 다음과 같습니다.");
+
+        int sum = 0;
+        for(BuyList.Item item: buyList.getItems()){
+            int temp = item.getAmount()* item.getPrice();
+            response.getWriter().printf(
+                "%s - %d 개, 개당 %d 원\n" +
+                "계: %d 원\n",
+                item.getName(), item.getAmount(), item.getPrice(),
+                temp);
+            sum += temp;
+        }
+
+        response.getWriter().printf("총합 %d 원 입니다\n", sum);
+        response.getWriter().println();
+
+
     }
 
     @Override
@@ -41,6 +69,7 @@ public class CartServlet extends HttpServlet {
             (Map<String, Integer>) request.getServletContext().getAttribute("foodList");
 
         BuyList buyList = new BuyList();
+        Basket basket = new Basket();
 
         try {
             while (tokenizer.hasMoreTokens()) {
@@ -51,39 +80,38 @@ public class CartServlet extends HttpServlet {
                     throw new InvalidKeyException(
                         "매대에 존재하지 않는 제품이 포함되어있습니다.\n" +
                             "제품 매대를 확인하고 다시 입력해주세요.\n");
+                } else if (foodList.get(name) < amount) {
+                    throw new InvalidKeyException(
+                        "진열된 수량보다 더 많은 값이 입력되었습니다.\n" +
+                            "제품 매대를 확인하고 다시 입력해주세요.\n");
                 } else {
-                    if (foodList.get(name) < amount) {
-                        throw new InvalidKeyException(
-                            "진열된 수량보다 더 많은 값이 입력되었습니다.\n" +
-                                "제품 매대를 확인하고 다시 입력해주세요.\n");
-                    } else {
-                        FoodStand stand =
-                            (FoodStand) request.getServletContext().getAttribute("foodStand");
-                        buyList.add(new BuyList.Item(name, amount));
+                    FoodStand stand =
+                        (FoodStand) request.getServletContext().getAttribute("foodStand");
 
-                        Basket basket = new Basket();
-                        for (int i = 0; i < amount; i++) {
-                            for (int k = 0; k < stand.getFoods().size(); ) {
-                                Food food = stand.getFoods().get(k);
-
-                                if (food.getName().equals(name)) {
-                                    basket.add(food);
-                                    stand.getFoods().remove(k);
-                                    break;
-                                } else {
-                                    k++;
+                    for (int i = 0; i < amount; i++) {
+                        for (int k = 0; k < stand.getFoods().size(); ) {
+                            Food food = stand.getFoods().get(k);
+                            if (food.getName().equals(name)) {
+                                if(i == 0){
+                                    buyList.add(new BuyList.Item(name,food.getPrice(),amount));
                                 }
+                                basket.add(food);
+                                stand.getFoods().remove(k);
+                                break;
+                            } else {
+                                k++;
                             }
                         }
                     }
                 }
             }
+            request.getServletContext().setAttribute("basket",basket);
+            request.getServletContext().setAttribute("buyList",buyList);
+            response.sendRedirect("/cart");
         }catch (Exception e){
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/plain");
             response.getWriter().println(e.getMessage());
         }
-
-        request.getServletContext().setAttribute("buyList",buyList);
     }
 }

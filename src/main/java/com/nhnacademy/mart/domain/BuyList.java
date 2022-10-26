@@ -11,10 +11,11 @@ public class BuyList {
 
     public static class Item {
         private final String name;
-
+        private final int price;
         private final int amount;
-        public Item(String name, int amount) {
+        public Item(String name,int price, int amount) {
             this.name = name;
+            this.price = price;
             this.amount = amount;
         }
 
@@ -26,6 +27,9 @@ public class BuyList {
             return amount;
         }
 
+        public int getPrice() {
+            return price;
+        }
     }
 
     public ArrayList<Item> getItems() {

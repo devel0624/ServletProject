@@ -1,5 +1,6 @@
 package com.nhnacademy.mart.servlet;
 
+import com.nhnacademy.mart.domain.FoodList;
 import com.nhnacademy.mart.domain.FoodStand;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,15 +23,7 @@ public class FoodsServlet extends HttpServlet {
          */
         FoodStand stand = (FoodStand) request.getServletContext().getAttribute("foodStand");
 
-        Map<String , Integer> foodList = new HashMap<>();
-
-        stand.getFoods().forEach(food -> {
-            if( !foodList.containsKey(food.getName())){
-                foodList.put(food.getName(),1);
-            } else {
-                foodList.replace(food.getName(), foodList.get(food.getName())+1);
-            }
-        });
+        Map<String , Integer> foodList = FoodList.getFoodList(stand.getFoods());
 
         request.getServletContext().setAttribute("foodList",foodList);
 
@@ -45,11 +38,5 @@ public class FoodsServlet extends HttpServlet {
                     throw new RuntimeException(e);
                 }
             });
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-
     }
 }
