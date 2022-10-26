@@ -11,10 +11,10 @@
     <context-param>
         <param-name>foods</param-name>
         <param-value>
-            양파 1000,
-            계란 2000,
-            파 500,
-            사과 2000
+            onion 1000,
+            egg 2000,
+            springOnion 500,
+            apple 2000
         </param-value>
     </context-param>
 </web-app>
