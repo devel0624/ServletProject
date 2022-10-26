@@ -22,7 +22,7 @@ public class InitServlet extends HttpServlet {
         ServletContext context = config.getServletContext();
 
         StringTokenizer tokenizer = new StringTokenizer(
-            context.getInitParameter("foods").trim(), ",");
+            context.getInitParameter("foods").trim(), ", \n");
 
         foodList = new Food[tokenizer.countTokens()/2];
 
@@ -47,12 +47,14 @@ public class InitServlet extends HttpServlet {
 
          for (int i = 0 ; i < foodList.length; i++){
 
-             int value = new Random().nextInt(10);
+             int value = 5 + new Random().nextInt(5);
 
              for(int k = 0; k < value; k++){
                 stand.getFoods().add(new Food(foodList[i]));
              }
          }
          request.getServletContext().setAttribute("foodStand",stand);
+
+         response.sendRedirect("/foods");
     }
 }
