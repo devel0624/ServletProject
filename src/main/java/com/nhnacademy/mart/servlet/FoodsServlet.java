@@ -32,6 +32,8 @@ public class FoodsServlet extends HttpServlet {
             }
         });
 
+        request.getServletContext().setAttribute("foodList",foodList);
+
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
 
